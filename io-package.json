@@ -1,0 +1,98 @@
+{
+	"common": {
+		"name": "bayernluft",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"zh-cn": "首次出版"
+			}
+		},
+		"title": "bayernluft",
+		"titleLang": {
+			"en": "bayernluft",
+			"de": "bayernluft",
+			"ru": "Bayernluft",
+			"pt": "Bayernluft",
+			"nl": "bayernluft",
+			"fr": "Bayernluft",
+			"it": "bayernluft",
+			"es": "Bayernluft",
+			"pl": "bayernluft",
+			"zh-cn": "Bayernluft"
+		},
+		"desc": {
+			"en": "connect your Bayernluft devices with ioBroker",
+			"de": "Verbinden Sie Ihre Bayernluft-Geräte mit ioBroker",
+			"ru": "подключите свои устройства Bayernluft к ioBroker",
+			"pt": "conecte seus dispositivos Bayernluft com ioBroker",
+			"nl": "verbind uw Bayernluft-apparaten met ioBroker",
+			"fr": "connectez vos appareils Bayernluft avec ioBroker",
+			"it": "collega i tuoi dispositivi Bayernluft con ioBroker",
+			"es": "conecte sus dispositivos Bayernluft con ioBroker",
+			"pl": "połącz swoje urządzenia Bayernluft za pomocą ioBroker",
+			"zh-cn": "将您的Bayernluft设备与ioBroker连接"
+		},
+		"authors": [
+			"xenon-s <ente_s@hotmail.de>"
+		],
+		"keywords": [
+			"bayernluft"
+		],
+		"license": "MIT",
+		"platform": "Javascript/Node.js",
+		"main": "main.js",
+		"icon": "bayernluft.png",
+		"enabled": true,
+		"extIcon": "https://raw.githubusercontent.com/xenon-s/ioBroker.bayernluft/master/admin/bayernluft.png",
+		"readme": "https://github.com/xenon-s/ioBroker.bayernluft/blob/master/README.md",
+		"loglevel": "info",
+		"mode": "daemon",
+		"type": "hardware",
+		"compact": true,
+		"connectionType": "local",
+		"dataSource": "poll",
+		"materialize": true,
+		"dependencies": [
+			{
+				"js-controller": ">=2.0.0"
+			}
+		]
+	},
+	"native": {
+		"option1": true,
+		"option2": "42"
+	},
+	"objects": [],
+	"instanceObjects": [
+		{
+			"_id": "info",
+			"type": "channel",
+			"common": {
+				"name": "Information"
+			},
+			"native": {}
+		},
+		{
+			"_id": "info.connection",
+			"type": "state",
+			"common": {
+				"role": "indicator.connected",
+				"name": "Device or service connected",
+				"type": "boolean",
+				"read": true,
+				"write": false,
+				"def": false
+			},
+			"native": {}
+		}
+	]
+}
