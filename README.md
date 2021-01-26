@@ -1,4 +1,4 @@
-![Logo](admin/icon.png)
+![Logo](admin/bayernluft.png.png)
 # ioBroker.bayernluft
 
 ![Number of Installations (stable)](http://iobroker.live/badges/bayernluft.svg)
