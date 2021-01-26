@@ -2,93 +2,182 @@
 
 <head>
 
-	<!-- Load ioBroker scripts and styles-->
-	<link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
-	<link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
+    <!-- Load ioBroker scripts and styles-->
+    <link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
+    <link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
 
-	<script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
-	<script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
 
-	<script type="text/javascript" src="../../js/translate.js"></script>
-	<script type="text/javascript" src="../../lib/js/materialize.js"></script>
-	<script type="text/javascript" src="../../js/adapter-settings.js"></script>
+    <script type="text/javascript" src="../../js/translate.js"></script>
+    <script type="text/javascript" src="../../lib/js/materialize.js"></script>
+    <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
-	<!-- Load our own files -->
-	<link rel="stylesheet" type="text/css" href="style.css" />
-	<script type="text/javascript" src="words.js"></script>
+    <!-- Load our own files -->
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script type="text/javascript" src="words.js"></script>
 
-	<script type="text/javascript">
-		// This will be called by the admin adapter when the settings page loads
-		function load(settings, onChange) {
-			// example: select elements with id=key and class=value and insert value
-			if (!settings) return;
-			$('.value').each(function () {
-				var $key = $(this);
-				var id = $key.attr('id');
-				if ($key.attr('type') === 'checkbox') {
-					// do not call onChange direct, because onChange could expect some arguments
-					$key.prop('checked', settings[id])
-						.on('change', () => onChange())
-						;
-				} else {
-					// do not call onChange direct, because onChange could expect some arguments
-					$key.val(settings[id])
-						.on('change', () => onChange())
-						.on('keyup', () => onChange())
-						;
-				}
-			});
-			onChange(false);
-			// reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
-			if (M) M.updateTextFields();
-		}
+    <script type="text/javascript">
 
-		// This will be called by the admin adapter when the user presses the save button
-		function save(callback) {
-			// example: select elements with class=value and build settings object
-			var obj = {};
-			$('.value').each(function () {
-				var $this = $(this);
-				if ($this.attr('type') === 'checkbox') {
-					obj[$this.attr('id')] = $this.prop('checked');
-				} else if ($this.attr('type') === 'number') {
-					obj[$this.attr('id')] = parseFloat($this.val());
-				} else {
-					obj[$this.attr('id')] = $this.val();
-				}
-			});
-			callback(obj);
-		}
-	</script>
+        // decl var, const etc
+
+        let deviceID = [];
+        let varTrue = false;
+
+        // This will be called by the admin adapter when the settings page loads
+        function loadUser(settings, onChange) {
+            // example: select elements with id=key and class=value and insert value
+            if (!settings) return;
+            $('.value').each(function () {
+                var $key = $(this);
+                var id = $key.attr('id');
+                if ($key.attr('type') === 'checkbox') {
+                    // do not call onChange direct, because onChange could expect some arguments
+                    $key.prop('checked', settings[id])
+                        .on('change', () => onChange())
+                        ;
+                } else {
+                    // do not call onChange direct, because onChange could expect some arguments
+                    $key.val(settings[id])
+                        .on('change', () => onChange())
+                        .on('keyup', () => onChange())
+                        ;
+                }
+            });
+            onChange(false);
+            // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
+            if (M) M.updateTextFields();
+        };
+
+
+        // This will be called by the admin adapter when the settings page loads
+        async function load(settings, onChange) {
+            if (!settings) return;
+            let namespace = `${adapter}.${instance}`;
+
+            socket.emit('getState', `system.adapter.${namespace}.alive`, async function (err, state) {
+                active = await /*common.enabled ||*/ (state && state.val);
+                if (!active) {
+                    await $(`#show-all`).html(`<div class="collapsible-header red lighten-1"><i class="large material-icons">error_outline</i>Please activate the ${adapter}.${instance} instance!</div>`);
+                    await $('.btn-save, .btn-save-close').addClass('disabled');
+                } else {
+
+                    deviceID = settings.deviceID || []; // device ID native anlegen
+
+                    function ctrlCntr(cntr) {
+                        if (cntr == undefined) {
+                            cntr = 0;
+                        };
+                        console.log(cntr);
+                        return cntr;
+                    };
+
+                    device_counter = settings.device_counter;
+
+                    loadUser(settings, onChange);
+
+                    // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
+                    setTimeout(function () {
+                        values2table('deviceID', deviceID, onChange); //deviceID
+                        $('#disableFirstField').find('td:first-child .values-input').prop('disabled', true);
+
+                    }, 300);
+
+                    if (M) M.updateTextFields();
+                    $('.collapsible').collapsible();
+
+                    // if (varTrue == false) {
+                    //     clickButton(onChange);
+                    //     onChange(false);
+                    // };
+                };
+            });
+        };
+
+
+
+        // This will be called by the admin adapter when the user presses the save button
+        function save(callback) {
+
+            let obj = {};
+
+            obj.deviceID = table2values('deviceID');
+
+            obj.deviceID = createId(obj.deviceID, device_counter, "device_counter");
+
+            function createId(array, counter, counter_name) {
+                for (const i in array) {
+                    if (array[i].id == "") {
+                        array[i].id = counter;
+                        counter++;
+                    };
+                };
+                obj[counter_name] = counter;
+                return array;
+            };
+
+            // example: select elements with class=value and build settings object
+            $('.value').each(function () {
+                var $this = $(this);
+                if ($this.attr('type') === 'checkbox') {
+                    obj[$this.attr('id')] = $this.prop('checked');
+                } else if ($this.attr('type') === 'number') {
+                    obj[$this.attr('id')] = parseFloat($this.val());
+                } else {
+                    obj[$this.attr('id')] = $this.val();
+                }
+            });
+            callback(obj);
+        }
+
+        // functions 
+
+
+
+    </script>
 
 </head>
 
 <body>
 
-	<div class="m adapter-container">
+    <div class="m adapter-container">
 
-		<div class="row">
-			<div class="col s12 m4 l2">
-				<img src="bayernluft.png" class="logo">
-			</div>
-		</div>
+        <div class="row">
+            <div class="col s12 m4 l2">
+                <img src="bayernluft.png" class="logo">
+            </div>
+        </div>
 
-		<!-- Put your content here -->
+        <!-- Put your content here -->
 
-		<!-- For example columns with settings: -->
-		<div class="row">
-			<div class="col s6 input-field">
-				<input type="checkbox" class="value" id="option1" />
-				<label for="option1" class="translate">option1</label>
-			</div>
-
-			<div class="col s6 input-field">
-				<input type="text" class="value" id="option2" />
-				<label for="option2" class="translate">option2</label>
-			</div>
-		</div>
-
-	</div>
+        <!-- For example columns with settings: -->
+        <div class="row" id="show-all">
+            <div class="blue lighten-5" id="deviceID">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="col s2">
+                            <a class="btn-floating waves-effect waves-light blue table-button-add">
+                                <i class="material-icons">add_circle_outline</i></a>
+                            <b>add device</b>
+                        </div>
+                        <div class="col s2">
+                            <a id="btn-check-alexa" class="waves-effect waves-light btn">check input</a>
+                        </div>
+                    </div>
+                </div>
+                <table class="table-values changeOnChangeEvent remove-last-column">
+                    <thead>
+                        <tr>
+                            <th data-name="_index" style="width: 40px" class="header translate">nr</th>
+                            <th data-name="deviceName" data-type="text" class="header translate">device name</th>
+                            <th data-name="deviceIP" data-type="text" class="header translate">device IP</th>
+                            <th data-name="id" style="width: 0px; display: none;" class="header translate">id</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
 
 </body>
 
